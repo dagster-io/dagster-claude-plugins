@@ -16,6 +16,12 @@ Install a plugin:
 /plugin install dg@claude-plugins-dagster
 ```
 
+To update your marketplace plugins:
+
+```
+/plugin marketplace update
+```
+
 ## Available Plugins
 
 **dg** - Dagster CLI commands for working with runs and logs
