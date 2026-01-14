@@ -34,6 +34,8 @@ To update your marketplace plugins:
 
 **dagster-conventions** - Comprehensive Dagster development conventions and best practices
 
+**dagster-integrations** - Comprehensive index of 82+ Dagster integrations including cloud platforms, data warehouses, ETL tools, AI/ML, data quality, monitoring, and more
+
 ---
 
 <div align="center">
