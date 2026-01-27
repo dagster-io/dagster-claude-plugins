@@ -50,7 +50,7 @@ This index aligns with Dagster's official documentation taxonomy from tags.yml:
 
 **Note**: Support levels (dagster-supported, community-supported) are shown inline in each integration entry.
 
-Last verified: 2026-01-14
+Last verified: 2026-01-27
 
 ## Top 10 Most Popular Integrations
 

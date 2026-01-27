@@ -9,7 +9,7 @@ Data warehouses, databases, object storage, and table formats for persistent dat
 ### Snowflake
 **Package:** `dagster-snowflake` | **Support:** Dagster-supported
 
-Cloud data warehouse with IO managers for pandas, polars, and PySpark DataFrames. Store and query large-scale analytics data.
+Cloud data warehouse for storing and querying large-scale analytics data. Provides IO managers for pandas, polars, and PySpark DataFrames (see `io-managers.md`).
 
 **Use cases:**
 - Store processed analytics tables for BI tools
@@ -49,7 +49,7 @@ defs = dg.Definitions(
 ### BigQuery
 **Package:** `dagster-gcp` | **Support:** Dagster-supported
 
-Google's serverless data warehouse with IO managers for pandas and PySpark. Automatically scales for large queries.
+Google's serverless data warehouse that automatically scales for large queries. Provides IO managers for pandas and PySpark (see `io-managers.md`).
 
 **Use cases:**
 - Run SQL analytics on petabyte-scale data
@@ -244,40 +244,6 @@ def mysql_data(mysql: MySQLResource):
 ```
 
 **Docs:** https://docs.dagster.io/integrations/libraries/mysql
-
----
-
-## NoSQL Databases
-
-### MongoDB
-**Package:** `dagster-mongo` | **Support:** Community-supported
-
-Document-oriented NoSQL database for flexible schema and high scalability.
-
-**Use cases:**
-- Store semi-structured data
-- High-write workloads
-- Flexible schemas
-- Document storage
-
-**Quick start:**
-```python
-from dagster_mongo import MongoResource
-
-mongo = MongoResource(
-    host="localhost",
-    port=27017,
-    database="mydb"
-)
-
-@dg.asset
-def mongo_data(mongo: MongoResource):
-    client = mongo.get_client()
-    collection = client["mydb"]["users"]
-    return list(collection.find({"status": "active"}))
-```
-
-**Docs:** https://docs.dagster.io/integrations/libraries/mongo
 
 ---
 
@@ -635,35 +601,23 @@ def publish_to_secoda(secoda: SecodaResource):
 |------|----------|----------|-------|
 | **Data Warehouses** | Analytical queries | Snowflake, BigQuery, Redshift | Petabytes |
 | **Relational** | Transactional data | Postgres, MySQL | Small-Large |
-| **NoSQL** | Semi-structured data | MongoDB | Medium-Large |
 | **Vector** | Embeddings, AI | Weaviate, Chroma, Qdrant | Medium-Large |
 | **Table Formats** | Data lake tables | Delta, Iceberg | Large |
 | **Object Storage** | Files, unstructured | S3, GCS, Azure Blob | Any |
 | **Metadata** | Catalogs, lineage | DataHub, Atlan, Secoda | N/A |
 
+## IO Managers for Databases
+
+Most database integrations provide **IO Managers** that automatically persist DataFrames as tables. For detailed information on using database IO managers, see `references/io-managers.md`.
+
+**Available IO Managers:**
+- `SnowflakePandasIOManager`, `SnowflakePolarsIOManager`, `SnowflakePySparkIOManager`
+- `BigQueryPandasIOManager`, `BigQueryPySparkIOManager`
+- `DuckDBPandasIOManager`, `DuckDBPolarsIOManager`, `DuckDBPySparkIOManager`
+- `PostgresPandasIOManager`
+- `DeltaLakePandasIOManager`, `DeltaLakePolarsIOManager`
+
 ## Common Patterns
-
-### IO Manager Pattern
-Most warehouse integrations provide IO managers to automatically persist DataFrames:
-
-```python
-from dagster_<warehouse>_pandas import <Warehouse>PandasIOManager
-
-defs = dg.Definitions(
-    assets=[my_asset],
-    resources={
-        "io_manager": <Warehouse>PandasIOManager(
-            # connection config
-        )
-    }
-)
-
-# Assets automatically save to warehouse
-@dg.asset
-def my_table() -> pd.DataFrame:
-    return pd.DataFrame({"col": [1, 2, 3]})
-    # Automatically saved to warehouse as table
-```
 
 ### Multi-Storage Pattern
 ```python
@@ -687,36 +641,8 @@ def search_index(raw_data: pd.DataFrame, weaviate: WeaviateResource):
     weaviate.index_documents(raw_data)
 ```
 
-### Local Dev with DuckDB
-```python
-# Development
-local_io_manager = DuckDBPandasIOManager(
-    database="dev.duckdb"
-)
+### Local Development Pattern
 
-# Production
-prod_io_manager = SnowflakePandasIOManager(...)
+Use DuckDB for local development and switch to production warehouse for deployment. This provides a fast, free local environment that mirrors production schemas.
 
-defs = dg.Definitions(
-    assets=[...],
-    resources={
-        "io_manager": (
-            local_io_manager if dev_mode
-            else prod_io_manager
-        )
-    }
-)
-```
-
-## Tips
-
-- **Development**: Use DuckDB for local development, production warehouse in deployment
-- **Cost**: BigQuery charges by query size, Snowflake by compute time
-- **Performance**: Use partitioning and clustering for large tables
-- **Schema**: Define schemas explicitly to avoid type inference issues
-- **Vector DBs**: Choose based on scale - Chroma for small, Qdrant/Weaviate for large
-- **Object storage**: Use cloud-native (S3/GCS/Azure) over databases for large files
-- **Table formats**: Delta/Iceberg add ACID to data lakes, worth the complexity
-- **Catalogs**: DataHub/Atlan provide discoverability for large data platforms
-- **Compression**: Parquet with compression saves storage and improves performance
-- **Indexes**: Add indexes on frequently queried columns
+See `references/io-managers.md` for detailed examples of environment-based configuration.
