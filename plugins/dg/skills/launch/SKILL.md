@@ -298,6 +298,8 @@ Users may need to:
 
 ### After Launch
 
+- `/dg:troubleshoot` - Debug failures
+- `/dg:logs` - Retrieve detailed logs
 - `/dagster-conventions` - Improve asset patterns based on issues
 
 ## What Gets Provided

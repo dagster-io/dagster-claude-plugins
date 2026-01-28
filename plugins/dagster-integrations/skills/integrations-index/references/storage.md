@@ -17,7 +17,6 @@ Cloud data warehouse for storing and querying large-scale analytics data.
 - Integrate with dbt for SQL transformations
 - Use as persistent storage for Dagster assets
 
-**For detailed guidance:** `/dagster-integrations:create-skill snowflake`
 
 **Quick start:**
 ```python
@@ -51,7 +50,7 @@ defs = dg.Definitions(
 ### BigQuery
 **Package:** `dagster-gcp` | **Support:** Dagster-supported
 
-Google's serverless data warehouse that automatically scales for large queries.
+Google's serverless data warehouse.
 
 **Use cases:**
 - Run SQL analytics on petabyte-scale data
