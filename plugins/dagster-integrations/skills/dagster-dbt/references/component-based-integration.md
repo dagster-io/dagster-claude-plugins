@@ -1,20 +1,27 @@
 # Component-Based Integration
 
-The Component-based approach uses `DbtProjectComponent` to define dbt assets via YAML configuration. This is the recommended approach for new projects.
+The Component-based approach uses `DbtProjectComponent` to define dbt assets via YAML configuration.
+This is the recommended approach for new projects.
 
 ## Overview
 
-`DbtProjectComponent` is a StateBackedComponent that automatically compiles and caches your dbt project's manifest. See [StateBackedComponents](../../integrations-index/references/state-backed-components.md) for general state management patterns.
+`DbtProjectComponent` is a StateBackedComponent that automatically compiles and caches your dbt
+project's manifest. See
+[StateBackedComponents](../../integrations-index/references/state-backed-components.md) for general
+state management patterns.
 
 ### dbt-Specific State Management
 
-**What state is managed**: The dbt `manifest.json` file, which contains all dbt models, tests, sources, and their relationships.
+**What state is managed**: The dbt `manifest.json` file, which contains all dbt models, tests,
+sources, and their relationships.
 
 **How it's compiled**: Runs `dbt parse` (and `dbt deps` if needed) to generate the manifest.
 
-**Configuration**: Use `prepare_if_dev` setting to control whether manifest is recompiled during local development (defaults to `true`).
+**Configuration**: Use `prepare_if_dev` setting to control whether manifest is recompiled during
+local development (defaults to `true`).
 
-In CI/CD, use `dg utils refresh-defs-state` or `dg plus deploy refresh-defs-state` to compile the manifest before deployment.
+In CI/CD, use `dg utils refresh-defs-state` or `dg plus deploy refresh-defs-state` to compile the
+manifest before deployment.
 
 ## Project Setup
 
@@ -25,7 +32,7 @@ Provide a local path to a dbt project within your Dagster repository:
 ```yaml
 type: dagster_dbt.DbtProjectComponent
 attributes:
-  project: '{{ context.project_root }}/dbt_project'
+  project: "{{ context.project_root }}/dbt_project"
 ```
 
 ### Remote Git Repositories
@@ -40,7 +47,8 @@ attributes:
     repo_relative_path: path/to/dbt
 ```
 
-During `dg utils refresh-defs-state`, the component automatically clones the repository and compiles the manifest.
+During `dg utils refresh-defs-state`, the component automatically clones the repository and compiles
+the manifest.
 
 ## Basic Configuration
 
@@ -115,7 +123,8 @@ type: my_project.lib.custom_dbt_component.CustomDbtComponent
 
 ### dbt Meta Config
 
-Define custom metadata in your dbt project files that can be consumed by your custom `get_asset_spec()` implementation:
+Define custom metadata in your dbt project files that can be consumed by your custom
+`get_asset_spec()` implementation:
 
 ```yaml
 models:
@@ -151,9 +160,11 @@ post_processing:
         partitions_def: "{{ my_partitions_def }}"
 ```
 
-The `context.partition_time_window` variable is available in `cli_args` during execution. Dagster automatically converts the vars dict to JSON format for dbt CLI.
+The `context.partition_time_window` variable is available in `cli_args` during execution. Dagster
+automatically converts the vars dict to JSON format for dbt CLI.
 
-For multiple partitions definitions, create separate `DbtProjectComponent` instances and use `select` to filter models for each.
+For multiple partitions definitions, create separate `DbtProjectComponent` instances and use
+`select` to filter models for each.
 
 ## Metadata
 
@@ -177,7 +188,8 @@ See [Asset Checks](asset-checks.md) for details on how dbt tests are loaded as D
 
 ## Dependencies
 
-See [Dependencies](dependencies.md) for details on how Dagster parses dbt project dependencies and patterns for defining additional dependencies.
+See [Dependencies](dependencies.md) for details on how Dagster parses dbt project dependencies and
+patterns for defining additional dependencies.
 
 ### Referencing dbt Models in Other Components
 
@@ -209,7 +221,8 @@ daily_schedule = dg.ScheduleDefinition(
 )
 ```
 
-For declarative automation, configure AutomationConditions via custom `get_asset_spec()` implementation.
+For declarative automation, configure AutomationConditions via custom `get_asset_spec()`
+implementation.
 
 ## Runtime Configuration
 

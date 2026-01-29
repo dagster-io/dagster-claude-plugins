@@ -1,10 +1,12 @@
 # Pythonic Integration
 
-The Pythonic approach uses the `@dbt_assets` decorator to define dbt assets programmatically. This provides maximum flexibility for complex customization scenarios.
+The Pythonic approach uses the `@dbt_assets` decorator to define dbt assets programmatically. This
+provides maximum flexibility for complex customization scenarios.
 
 ## Overview
 
 Key classes:
+
 - **`@dbt_assets`**: Decorator that loads dbt models as Dagster assets from a manifest
 - **`DbtCliResource`**: Resource for executing dbt CLI commands
 - **`DbtProject`**: Represents a dbt project and manages manifest compilation
@@ -48,7 +50,9 @@ my_dbt_project.prepare_if_dev()  # Runs dbt deps + dbt parse if needed
 
 ### Build-Time Compilation (Production)
 
-For production deployments, precompile the manifest in CI/CD to avoid recompilation overhead. The manifest at `DbtProject.manifest_path` (typically `target/manifest.json`) should be included in your deployed package.
+For production deployments, precompile the manifest in CI/CD to avoid recompilation overhead. The
+manifest at `DbtProject.manifest_path` (typically `target/manifest.json`) should be included in your
+deployed package.
 
 ## Selecting Models
 
@@ -101,11 +105,13 @@ def my_dbt_assets(context, dbt: DbtCliResource):
     yield from dbt.cli(["build"], context=context).stream()
 ```
 
-The `get_asset_spec()` method is called once per dbt node and should return a complete `AssetSpec` describing that node.
+The `get_asset_spec()` method is called once per dbt node and should return a complete `AssetSpec`
+describing that node.
 
 ### dbt Meta Config
 
-Define custom metadata in your dbt project files that can be consumed by your custom `get_asset_spec()` implementation:
+Define custom metadata in your dbt project files that can be consumed by your custom
+`get_asset_spec()` implementation:
 
 ```yaml
 models:
@@ -160,7 +166,8 @@ where order_date >= '{{ var('min_date') }}' and order_date <= '{{ var('max_date'
 {% endif %}
 ```
 
-For multiple partitions definitions, create separate `@dbt_assets` definitions and use `select`/`exclude` to filter models for each.
+For multiple partitions definitions, create separate `@dbt_assets` definitions and use
+`select`/`exclude` to filter models for each.
 
 ## Metadata
 
@@ -188,7 +195,8 @@ See [Asset Checks](asset-checks.md) for details on how dbt tests are loaded as D
 
 ## Dependencies
 
-See [Dependencies](dependencies.md) for details on how Dagster parses dbt project dependencies and patterns for defining additional dependencies.
+See [Dependencies](dependencies.md) for details on how Dagster parses dbt project dependencies and
+patterns for defining additional dependencies.
 
 ### Referencing dbt Models in Other Assets
 
@@ -224,7 +232,8 @@ daily_dbt_schedule = build_schedule_from_dbt_selection(
 
 ### Mixed Jobs (dbt + Non-dbt Assets)
 
-Use `build_dbt_asset_selection()` combined with `AssetSelection` for jobs with dbt and non-dbt assets:
+Use `build_dbt_asset_selection()` combined with `AssetSelection` for jobs with dbt and non-dbt
+assets:
 
 ```python
 import dagster as dg

@@ -7,6 +7,7 @@ dbt tests are loaded as Dagster asset checks by default (enabled in dagster-dbt 
 By default, only tests on dbt models are loaded as checks. To include tests on sources:
 
 **Component approach:**
+
 ```yaml
 attributes:
   translator_settings:
@@ -14,6 +15,7 @@ attributes:
 ```
 
 **Pythonic approach:**
+
 ```python
 from dagster_dbt import DagsterDbtTranslator, DagsterDbtTranslatorSettings
 
@@ -33,7 +35,8 @@ def my_dbt_assets(context, dbt: DbtCliResource):
 
 ## Singular Tests with Multiple Dependencies
 
-For singular tests that depend on multiple models, specify the target model in the test's config block:
+For singular tests that depend on multiple models, specify the target model in the test's config
+block:
 
 ```sql
 {{
@@ -53,4 +56,6 @@ For singular tests that depend on multiple models, specify the target model in t
 SELECT ...
 ```
 
-The `ref` structure mirrors dbt's [ref function](https://docs.getdbt.com/reference/dbt-jinja-functions/ref) parameters. Without this metadata, the test still runs but emits an AssetObservation instead of an asset check result.
+The `ref` structure mirrors dbt's
+[ref function](https://docs.getdbt.com/reference/dbt-jinja-functions/ref) parameters. Without this
+metadata, the test still runs but emits an AssetObservation instead of an asset check result.
