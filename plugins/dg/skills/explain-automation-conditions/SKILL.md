@@ -1,15 +1,22 @@
 ---
 name: explain-automation-conditions
-description: Expert guidance for understanding automation condition evaluations via Dagster Plus GraphQL API. Use when users ask why assets are not materializing, why assets materialized at a specific time, or need to understand automation condition behavior. Common trigger phrases include "why isn't my asset running", "why did this materialize", "debug automation", "SINCE condition", or "automation evaluation".
+description:
+  Expert guidance for understanding automation condition evaluations via Dagster Plus GraphQL API.
+  Use when users ask why assets are not materializing, why assets materialized at a specific time,
+  or need to understand automation condition behavior. Common trigger phrases include "why isn't my
+  asset running", "why did this materialize", "debug automation", "SINCE condition", or "automation
+  evaluation".
 ---
 
 # Debug Automation Conditions
 
-This skill helps debug automation condition evaluations by querying the Dagster Plus GraphQL API to understand why assets are or aren't materializing.
+This skill helps debug automation condition evaluations by querying the Dagster Plus GraphQL API to
+understand why assets are or aren't materializing.
 
 ## Initial Workflow
 
-When this skill is invoked, first ask the user what they want to do using AskUserQuestion with these options:
+When this skill is invoked, first ask the user what they want to do using AskUserQuestion with these
+options:
 
 1. **Diagnose unexpected behavior** - Asset not running when expected, or ran unexpectedly
 2. **Summarize current state** - Get the latest evaluation status for an asset
@@ -19,7 +26,8 @@ Then ask for the asset key path (e.g., "some/asset/key")
 ## Authentication Setup
 
 1. Attempt to read `~/.config/dg.toml` to get credentials
-2. If the file doesn't exist or is missing required fields, instruct the user to run: `dg plus login`
+2. If the file doesn't exist or is missing required fields, instruct the user to run:
+   `dg plus login`
 3. Required fields in `~/.config/dg.toml`:
    - `organization` - Dagster Cloud organization name
    - `user_token` - API token (format: "user:xxxxx")
@@ -52,6 +60,7 @@ GRAPHQL_EOF
 ```
 
 **Key points:**
+
 - Use `--data-binary @-` to read from stdin
 - Use heredoc with `<<'GRAPHQL_EOF'` (single quotes prevent variable expansion)
 - The `-sS` flags: silent mode but show errors
@@ -86,16 +95,19 @@ GRAPHQL_EOF
 **DO NOT** use Python for timestamp conversion. Use the `date` command instead:
 
 **For macOS (BSD date):**
+
 ```bash
 date -r 1769729457 -u '+%Y-%m-%d %H:%M:%S UTC'
 ```
 
 **For Linux (GNU date):**
+
 ```bash
 date -d '@1769729457' -u '+%Y-%m-%d %H:%M:%S UTC'
 ```
 
 **To handle both platforms automatically:**
+
 ```bash
 timestamp=1769729457
 if date --version >/dev/null 2>&1; then
@@ -108,6 +120,7 @@ fi
 ```
 
 **Or use a simpler one-liner that works on both:**
+
 ```bash
 # Extract integer part of timestamp (handles decimals from JSON)
 timestamp=$(echo "1769729457.442442" | cut -d. -f1)
@@ -116,13 +129,18 @@ date -u -j -f %s "${timestamp}" '+%Y-%m-%d %H:%M:%S UTC' 2>/dev/null || date -u 
 
 ## Prerequisites
 
-For understanding automation conditions conceptually (how they work, what operands/operators are available, how to write them), see the **dagster-automation** skill. This skill focuses on debugging existing automation conditions by examining their evaluation records.
+For understanding automation conditions conceptually (how they work, what operands/operators are
+available, how to write them), see the **dagster-automation** skill. This skill focuses on debugging
+existing automation conditions by examining their evaluation records.
 
 ## Overview
 
-Automation conditions (like `eager()`, `on_cron()`, `on_missing()`) determine when assets should be materialized. When assets don't materialize as expected, or materialize unexpectedly, you need to examine the evaluation records to understand what happened.
+Automation conditions (like `eager()`, `on_cron()`, `on_missing()`) determine when assets should be
+materialized. When assets don't materialize as expected, or materialize unexpectedly, you need to
+examine the evaluation records to understand what happened.
 
 Each evaluation creates a tree structure showing:
+
 - Which conditions passed (true) and failed (false)
 - How many partitions matched each condition
 - Why the overall automation condition succeeded or failed
@@ -140,23 +158,24 @@ After querying the evaluation:
 
 ## Quick Reference
 
-| Scenario | What to Check | Reference |
-|----------|---------------|-----------|
-| Asset not materializing | Root condition failure reason | [Common Patterns](references/common-patterns.md) |
-| `in_progress` blocking execution | Check if run or backfill is running | [Common Patterns](references/common-patterns.md) |
-| SINCE condition stuck | Check trigger vs reset conditions | [SINCE Conditions](references/since-conditions.md) |
-| Partitioned asset with backlog | Compare `missing` vs `newly_missing` | [Partitioned Assets](references/partitioned-assets.md), [SINCE Conditions](references/since-conditions.md) |
-| Asset materialized unexpectedly | Query historical evaluation at that time | [Common Patterns](references/common-patterns.md) |
-| Understanding evaluation structure | Learn about nodes, operators, numTrue | [Evaluation Structure](references/evaluation-structure.md) |
-| Setting up queries | Authentication and query examples | [GraphQL Queries](references/graphql-queries.md) |
-| Understanding SINCE operators | How SINCE tracks state over time | [SINCE Conditions](references/since-conditions.md) |
-| What operands/operators mean | See **dagster-automation** skill | references/declarative-automation-operands.md, references/declarative-automation-operators.md |
+| Scenario                           | What to Check                            | Reference                                                                                                  |
+| ---------------------------------- | ---------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| Asset not materializing            | Root condition failure reason            | [Common Patterns](references/common-patterns.md)                                                           |
+| `in_progress` blocking execution   | Check if run or backfill is running      | [Common Patterns](references/common-patterns.md)                                                           |
+| SINCE condition stuck              | Check trigger vs reset conditions        | [SINCE Conditions](references/since-conditions.md)                                                         |
+| Partitioned asset with backlog     | Compare `missing` vs `newly_missing`     | [Partitioned Assets](references/partitioned-assets.md), [SINCE Conditions](references/since-conditions.md) |
+| Asset materialized unexpectedly    | Query historical evaluation at that time | [Common Patterns](references/common-patterns.md)                                                           |
+| Understanding evaluation structure | Learn about nodes, operators, numTrue    | [Evaluation Structure](references/evaluation-structure.md)                                                 |
+| Setting up queries                 | Authentication and query examples        | [GraphQL Queries](references/graphql-queries.md)                                                           |
+| Understanding SINCE operators      | How SINCE tracks state over time         | [SINCE Conditions](references/since-conditions.md)                                                         |
+| What operands/operators mean       | See **dagster-automation** skill         | references/declarative-automation-operands.md, references/declarative-automation-operators.md              |
 
 ## Key Concepts
 
 - **Evaluation Record**: A snapshot of automation condition evaluation at a specific time
 - **Evaluation Tree**: Hierarchical structure showing how conditions were evaluated
-- **SINCE Operators**: Stateful operators that track changes over time (often the source of confusion)
+- **SINCE Operators**: Stateful operators that track changes over time (often the source of
+  confusion)
 - **Partitioned Evaluations**: Evaluations that operate on multiple partitions simultaneously
 - **Short-Circuit Evaluation**: When early conditions fail, later conditions show 0/0 candidates
 
@@ -165,7 +184,8 @@ After querying the evaluation:
 1. **Run in progress**: Asset won't materialize because one is already running
 2. **SINCE condition stuck**: No new changes since last handling, condition stays false
 3. **Short-circuit evaluation**: Later conditions show 0/0 because earlier AND conditions failed
-4. **Missing vs newly_missing**: Large backlog of old missing partitions won't trigger `newly_missing`
+4. **Missing vs newly_missing**: Large backlog of old missing partitions won't trigger
+   `newly_missing`
 5. **Upstream dependency updated**: The most common reason assets DO materialize
 
 ## Getting Started
@@ -179,7 +199,8 @@ After querying the evaluation:
 
 For SINCE-related issues (very common!), see [SINCE Conditions](references/since-conditions.md).
 
-For understanding what automation conditions are available and how to write them, use the **dagster-automation** skill.
+For understanding what automation conditions are available and how to write them, use the
+**dagster-automation** skill.
 
 ## Common Pitfalls to Avoid
 

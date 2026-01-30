@@ -1,10 +1,12 @@
 # Understanding Evaluation Structure
 
-This reference explains how automation condition evaluations are structured and how to read evaluation trees.
+This reference explains how automation condition evaluations are structured and how to read
+evaluation trees.
 
 ## Evaluation Record
 
-An evaluation record is a snapshot of an automation condition evaluation at a specific point in time.
+An evaluation record is a snapshot of an automation condition evaluation at a specific point in
+time.
 
 ### Top-Level Fields
 
@@ -27,40 +29,45 @@ An evaluation record is a snapshot of an automation condition evaluation at a sp
 ### Key Indicators
 
 **Did the asset materialize?**
+
 - `numRequested > 0`: Yes, asset was requested
 - `numRequested == 0`: No, asset was not requested
 - Check `runIds` for the run IDs that were launched
 
 **When did it happen?**
+
 - `timestamp`: When the evaluation occurred
 - Convert to datetime for human-readable format
 
 ## Evaluation Tree
 
-The evaluation tree is a hierarchical structure showing how the automation condition was evaluated. It's returned as a flattened array in `evaluationNodes`.
+The evaluation tree is a hierarchical structure showing how the automation condition was evaluated.
+It's returned as a flattened array in `evaluationNodes`.
 
 ### Node Structure
 
 ```json
 {
   "uniqueId": "677e243ed57cb83fbaed10095ea96a69",
-  "userLabel": "eager",  // Custom label via .with_label()
-  "expandedLabel": [  // Human-readable description
+  "userLabel": "eager", // Custom label via .with_label()
+  "expandedLabel": [
+    // Human-readable description
     "(in_latest_time_window)",
     "AND",
     "(((newly_missing) OR (any_deps_updated)) SINCE (handled))"
   ],
-  "operatorType": "and",  // "and", "or", "not", "identity"
+  "operatorType": "and", // "and", "or", "not", "identity"
   "startTimestamp": 1769709948.45114,
   "endTimestamp": 1769709948.5402973,
-  "numTrue": 1,  // Partitions/assets that matched
-  "numCandidates": 1,  // Partitions/assets evaluated
-  "isPartitioned": false,  // Whether asset is partitioned
-  "childUniqueIds": [  // IDs of child nodes
+  "numTrue": 1, // Partitions/assets that matched
+  "numCandidates": 1, // Partitions/assets evaluated
+  "isPartitioned": false, // Whether asset is partitioned
+  "childUniqueIds": [
+    // IDs of child nodes
     "2de4e7aadfa772d02135a5fab75b19bb",
     "ed746bd28c6b01d83859298678a7e111"
   ],
-  "entityKey": {"path": ["my", "asset"]}  // Which asset this node evaluates
+  "entityKey": { "path": ["my", "asset"] } // Which asset this node evaluates
 }
 ```
 
@@ -107,6 +114,7 @@ When an AND condition fails early, later conditions show `0/0`:
 ```
 
 The `any_deps_updated` condition shows `0/0` because:
+
 1. The AND requires both conditions to be true
 2. The first condition `NOT (in_progress)` failed
 3. No need to evaluate `any_deps_updated`, so it was skipped
@@ -185,6 +193,7 @@ def print_tree(node, all_nodes, indent=0):
 ```
 
 **Analysis:**
+
 1. Root AND condition failed (`numTrue: 0`)
 2. First child `NOT (in_progress)` failed
 3. Because `in_progress` is TRUE (a run is in progress)
@@ -250,6 +259,7 @@ def print_tree(node, all_nodes, indent=0):
 ```
 
 **Analysis:**
+
 1. Root condition passed (`numTrue: 1`)
 2. The `any_deps_updated` branch passed
 3. Upstream asset `purina/core/dim_compass_users` was `newly_updated`

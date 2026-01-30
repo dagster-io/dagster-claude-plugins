@@ -1,10 +1,13 @@
 # SINCE Conditions: Understanding Stateful Evaluation
 
-SINCE conditions are stateful operators that track whether a condition has become true since the last time it was "handled". They're core to the `eager()` automation condition and are often the source of confusion when debugging.
+SINCE conditions are stateful operators that track whether a condition has become true since the
+last time it was "handled". They're core to the `eager()` automation condition and are often the
+source of confusion when debugging.
 
 ## What SINCE Does
 
 The SINCE operator has two parts:
+
 1. **Trigger condition**: The condition you want to detect
 2. **Reset condition**: The condition that resets the state (called "handled")
 
@@ -15,10 +18,12 @@ Example: `(newly_missing OR any_deps_updated) SINCE (handled)`
 ### Behavior
 
 SINCE evaluates to TRUE when:
+
 - The trigger condition has become true at least once
 - AND it hasn't been reset since then
 
-Once the reset condition becomes true, the SINCE state is cleared, and it waits for the trigger condition again.
+Once the reset condition becomes true, the SINCE state is cleared, and it waits for the trigger
+condition again.
 
 ## Why SINCE Exists
 
@@ -70,6 +75,7 @@ Only triggers for assets that were updated in the current evaluation window.
 ```
 
 Where `handled` is:
+
 ```
 (newly_requested) OR (newly_updated) OR (initial_evaluation)
 ```
@@ -97,7 +103,8 @@ You have an asset with 2377 missing partitions that have been missing for months
 ### Why It's Stuck
 
 1. **`missing` is TRUE** for 2377 partitions
-2. **BUT `newly_missing` is FALSE** - these partitions have been missing for a long time, they're not *newly* missing
+2. **BUT `newly_missing` is FALSE** - these partitions have been missing for a long time, they're
+   not _newly_ missing
 3. **`any_deps_updated` is FALSE** - no dependencies have updated recently
 4. **So the trigger `(newly_missing OR any_deps_updated)` is FALSE**
 5. **The SINCE condition stays FALSE** because the trigger never fired
@@ -105,6 +112,7 @@ You have an asset with 2377 missing partitions that have been missing for months
 ### Why This Happens
 
 The partitions became missing long ago:
+
 - At that time, `newly_missing` would have been TRUE
 - The SINCE would have been TRUE
 - But nothing ever "handled" it (the asset was never requested or updated)
@@ -123,6 +131,7 @@ Look at the immediate child of the SINCE node:
 ```
 
 If the trigger is FALSE:
+
 - Check why it's false
 - For `newly_missing`: Check if `missing` is TRUE but `newly_missing` is FALSE
 - For `any_deps_updated`: Check if any dependencies exist and their state
@@ -138,6 +147,7 @@ Look at the reset condition:
 ```
 
 If `handled` is FALSE across all evaluations:
+
 - Nothing has ever reset the SINCE
 - Need to manually kickstart by materializing or requesting
 
@@ -149,6 +159,7 @@ If `handled` is FALSE across all evaluations:
 ```
 
 This pattern indicates:
+
 - Historical backlog of missing partitions
 - SINCE deadlock: old missing partitions won't trigger `newly_missing`
 
@@ -157,6 +168,7 @@ This pattern indicates:
 ### Solution 1: Manual Kickstart
 
 Materialize one partition manually:
+
 1. This sets `newly_updated` to TRUE
 2. `handled` becomes TRUE (because `newly_updated` is part of `handled`)
 3. This resets the SINCE state
@@ -165,6 +177,7 @@ Materialize one partition manually:
 ### Solution 2: Wait for Dependency Update
 
 If the asset has upstream dependencies:
+
 - Wait for an upstream asset to materialize
 - This will set `any_deps_updated` to TRUE
 - The trigger fires, SINCE becomes TRUE
@@ -173,6 +186,7 @@ If the asset has upstream dependencies:
 ### Solution 3: Change Automation Condition
 
 If SINCE is causing persistent issues:
+
 - Consider `AutomationCondition.on_missing()` for backfills
 - Or customize the condition to not use SINCE for your use case
 - Or use `on_cron()` if time-based execution is acceptable
@@ -191,7 +205,8 @@ The `handled` condition is:
 
 ### Why initial_evaluation?
 
-On the very first evaluation, there's no prior state, so SINCE would be stuck forever. `initial_evaluation` allows the first evaluation to succeed.
+On the very first evaluation, there's no prior state, so SINCE would be stuck forever.
+`initial_evaluation` allows the first evaluation to succeed.
 
 ## SINCE with Partitioned Assets
 
@@ -205,7 +220,8 @@ Partition "2024-01-02":
   - missing SINCE handled: FALSE (already handled)
 ```
 
-This allows fine-grained control: only request partitions that need attention, not all missing partitions.
+This allows fine-grained control: only request partitions that need attention, not all missing
+partitions.
 
 ## Example: Reading SINCE in Evaluations
 
@@ -215,7 +231,7 @@ This allows fine-grained control: only request partitions that need attention, n
 {
   "uniqueId": "0d4629...",
   "expandedLabel": ["((newly_missing) OR (any_deps_updated))", "SINCE", "(handled)"],
-  "operatorType": "identity",  // SINCE is represented as identity
+  "operatorType": "identity", // SINCE is represented as identity
   "numTrue": 0,
   "numCandidates": 1,
   "childUniqueIds": ["4c3728...", "4db5d0..."]
@@ -223,6 +239,7 @@ This allows fine-grained control: only request partitions that need attention, n
 ```
 
 Look at children:
+
 ```json
 {
   "uniqueId": "4c3728...",
@@ -245,13 +262,14 @@ Both children are FALSE → SINCE is stuck waiting for trigger to fire.
   "uniqueId": "0d4629...",
   "expandedLabel": ["((newly_missing) OR (any_deps_updated))", "SINCE", "(handled)"],
   "operatorType": "identity",
-  "numTrue": 1,  // ← SINCE is TRUE!
+  "numTrue": 1, // ← SINCE is TRUE!
   "numCandidates": 1,
   "childUniqueIds": ["4c3728...", "4db5d0..."]
 }
 ```
 
 Look at children:
+
 ```json
 {
   "uniqueId": "4c3728...",
@@ -285,6 +303,7 @@ For SINCE conditions, evaluation nodes may include special metadata:
 ```
 
 This shows:
+
 - When the trigger last fired
 - When it was last reset
 - Useful for understanding SINCE state history
@@ -298,4 +317,5 @@ This shows:
 5. **Manual kickstart** often fixes stuck SINCE by resetting the state
 6. **SINCE is per-partition** for partitioned assets, allowing granular control
 
-For more on how to compose and customize conditions with SINCE, see the **dagster-automation** skill references on operators and customization.
+For more on how to compose and customize conditions with SINCE, see the **dagster-automation** skill
+references on operators and customization.
