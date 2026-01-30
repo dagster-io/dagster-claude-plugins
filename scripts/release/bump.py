@@ -119,23 +119,20 @@ def main() -> None:
 
     # Get repository root (script is in scripts/release/ subdirectory)
     repo_root = Path(__file__).parent.parent.parent
-    plugins_dir = repo_root / "plugins"
 
-    # Find all plugin.json files
-    plugin_files = list(plugins_dir.glob("*/.claude-plugin/plugin.json"))
+    # Find root-level plugin.json file
+    plugin_file = repo_root / ".claude-plugin" / "plugin.json"
 
-    if not plugin_files:
-        print("Error: No plugin.json files found in plugins/", file=sys.stderr)
+    if not plugin_file.exists():
+        print("Error: plugin.json not found at .claude-plugin/plugin.json", file=sys.stderr)
         sys.exit(1)
 
     print(f"Bumping version to {version}...")
     print()
 
-    # Update all plugin.json files
-    for plugin_file in sorted(plugin_files):
-        plugin_name = plugin_file.parent.parent.name
-        update_plugin_version(plugin_file, version)
-        print(f"✓ Updated {plugin_name}/plugin.json")
+    # Update plugin.json file
+    update_plugin_version(plugin_file, version)
+    print(f"✓ Updated .claude-plugin/plugin.json")
 
     # Update CHANGELOG.md
     update_changelog(repo_root, version)
