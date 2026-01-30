@@ -132,7 +132,7 @@ def main() -> None:
 
     # Update plugin.json file
     update_plugin_version(plugin_file, version)
-    print(f"✓ Updated .claude-plugin/plugin.json")
+    print("✓ Updated .claude-plugin/plugin.json")
 
     # Update CHANGELOG.md
     update_changelog(repo_root, version)
